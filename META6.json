@@ -1,0 +1,27 @@
+{
+    "perl" : "6.c",
+    "name" : "NativeLibs",
+    "version" : "0.0.3",
+    "auth" : "github:salortiz",
+    "description" : "Native libraries utilities",
+    "depends" : [ ],
+    "build-depends" : [ ],
+    "test-depends" : [ ],
+    "provides" : {
+	"LMDB" : "lib/NativeLibs.pm6"
+    },
+    "repo-type" : "git",
+    "source-url": "git://github.com/salortiz/p6-LMDB.git",
+    "authors" : "Salvador Ortiz <sortiz@cpan.com>",
+    "licence" : "artistic_2",
+    "support" : {
+	"email" : "sog@msg.com.mx",
+	"source" : [
+	    "git://github.com/salortiz/NativeLibs.git",
+	    "https://github.com/salortiz/NativeLibs.git"
+	]
+    },
+    "tags" : [
+	"NativeCall", "MoarVM", "Utilities"
+    ]
+}
