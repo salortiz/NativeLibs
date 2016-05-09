@@ -8,10 +8,10 @@
     "build-depends" : [ ],
     "test-depends" : [ ],
     "provides" : {
-	"LMDB" : "lib/NativeLibs.pm6"
+	"NativeLibs" : "lib/NativeLibs.pm6"
     },
     "repo-type" : "git",
-    "source-url": "git://github.com/salortiz/p6-LMDB.git",
+    "source-url": "git://github.com/salortiz/NativeLibs.git",
     "authors" : "Salvador Ortiz <sortiz@cpan.com>",
     "licence" : "artistic_2",
     "support" : {
