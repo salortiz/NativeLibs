@@ -1,21 +1,21 @@
 {
     "perl" : "6.c",
     "name" : "NativeLibs",
-    "version" : "0.0.3",
+    "version" : "0.0.5",
     "auth" : "github:salortiz",
     "description" : "Native libraries utilities",
     "depends" : [ ],
     "build-depends" : [ ],
     "test-depends" : [ ],
     "provides" : {
-	"LMDB" : "lib/NativeLibs.pm6"
+	"NativeLibs" : "lib/NativeLibs.pm6"
     },
     "repo-type" : "git",
-    "source-url": "git://github.com/salortiz/p6-LMDB.git",
+    "source-url": "git://github.com/salortiz/NativeLibs.git",
     "authors" : "Salvador Ortiz <sortiz@cpan.com>",
-    "licence" : "artistic_2",
+    "licence" : "Artistic-2.0",
     "support" : {
-	"email" : "sog@msg.com.mx",
+	"email" : "sog@msg.mx",
 	"source" : [
 	    "git://github.com/salortiz/NativeLibs.git",
 	    "https://github.com/salortiz/NativeLibs.git"

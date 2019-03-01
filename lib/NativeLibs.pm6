@@ -1,10 +1,12 @@
 use v6;
 
-unit module NativeLibs:auth<salortiz>:ver<0.0.3>;
 use NativeCall :ALL;
+sub EXPORT { %('NativeCall' => NativeCall) }
+unit module NativeLibs:auth<salortiz>:ver<0.0.6>;
+
+our constant is-win = Rakudo::Internals.IS-WIN();
 
 our proto sub cannon-name(|) { * }
-
 multi sub cannon-name(Str $libname, Version $version = Version) {
     with $libname.IO {
 	if .extension {
@@ -14,7 +16,6 @@ multi sub cannon-name(Str $libname, Version $version = Version) {
 	}
     }
 }
-
 multi sub cannon-name(Str $libname, Cool $ver) {
     cannon-name($libname, Version.new($ver));
 }
@@ -30,26 +31,19 @@ class Loader {
     has Str   $.name;
     has DLLib $.library;
 
+    sub dlerror(--> Str)         is native { * } # For linux or darwin/OS X
+    sub GetLastError(--> uint32) is native('kernel32') { * } # On Microsoft land
     method !dlerror() {
-	my sub dlerror(--> Str)         is native { * } # For linux or darwin/OS X
-	my sub GetLastError(--> uint32) is native { * } # On Microsoft land
-	given $*VM.config<osname> {
-	    when 'linux' | 'darwin' {
-		dlerror() // '';
-	    }
-	    when 'mswin32' | 'mingw' | 'msys' | 'cygwin' {
-		"error({ GetLastError })";
-	    }
-	}
+        is-win ?? ( dlerror() // '' ) !! "error({ GetLastError })";
     }
 
+    sub dlLoadLibrary(Str --> DLLib)  is native { * } # dyncall
+    sub dlopen(Str, uint32 --> DLLib) is native { * } # libffi
+    sub LoadLibraryA(Str --> DLLib) is native('kernel32') { * }
     method !dlLoadLibrary(Str $libname --> DLLib) {
-	my sub dlLoadLibrary(Str --> DLLib)  is native { * } # dyncall
-	my sub dlopen(Str, uint32 --> DLLib) is native { * } # libffi
-
-	dyncall
-	    ?? dlLoadLibrary($libname)
-	    !! dlopen($libname, 0x102); # RTLD_GLOBAL | RTLD_NOW
+	is-win  ?? LoadLibraryA($libname) !!
+        dyncall ?? dlLoadLibrary($libname) !!
+        dlopen($libname, 0x102); # RTLD_GLOBAL | RTLD_NOW
 
     }
 
@@ -61,12 +55,19 @@ class Loader {
 	}
     }
 
+    sub dlFindSymbol(  DLLib, Str --> Pointer) is native { * } # dyncall
+    sub dlsym(         DLLib, Str --> Pointer) is native { * } # libffi
+    sub GetProcAddress(DLLib, Str --> Pointer) is native('kernel32') { * }
+    sub GetModuleHandleA(     Str -->   DLLib) is native('kernel32') { * }
     method symbol(::?CLASS $self: Str $symbol, Mu $want = Pointer) {
-	my sub dlFindSymbol(DLLib, Str --> Pointer) is native { * } # dyncall
-	my sub dlsym(       DLLib, Str --> Pointer) is native { * } # libffi
-
-	my \c = \( $self.DEFINITE ?? $!library !! DLLib, $symbol );
-	my \ptr = (dyncall ?? &dlFindSymbol !! &dlsym)(|c);
+	my \c = \(
+            $self.DEFINITE ?? $!library !!
+            is-win ?? GetModuleHandleA(Str) !! DLLib,
+            $symbol
+        );
+	my \ptr = (
+            is-win ?? &GetProcAddress !! dyncall ?? &dlFindSymbol !! &dlsym
+        )(|c);
 
 	if ptr && $want !=== Pointer {
 	    nativecast($want, ptr);
@@ -75,11 +76,13 @@ class Loader {
 	}
     }
 
+    sub dlFreeLibrary(DLLib) is native { * }
+    sub dlclose(      DLLib) is native { * }
+    sub FreeLibrary(  DLLib --> int32) is native('kernel32') { * }
     method dispose(--> True) {
-	sub dlFreeLibrary(DLLib) is native { * }
-	sub dlclose(      DLLib) is native { * }
 	with $!library {
-	    dyncall ?? dlFreeLibrary($_) !! dlclose($_);
+            is-win  ?? FreeLibrary($_) !!
+	    dyncall ?? dlFreeLibrary($_) !!  dlclose($_);
 	    $_ = Nil;
 	}
     }
@@ -98,6 +101,8 @@ class Searcher {
 	}
 	# Try unversionized
 	$wlibname //= self!test: cannon-name($libname), $wks unless @vers;
+	# Try common practice in Windows;
+	$wlibname //= self!test: "lib$libname.dll", $wks if is-win;
 	$wlibname;
     }
 
@@ -109,10 +114,37 @@ class Searcher {
 		# The sensate thing to do is die, but somehow that don't work
 		#   ( 'Cannot invoke this object' ... )
 		# so let NC::!setup die for us returning $libname.
-		# die "Cannot locate native library '$libname'"
+		#die "Cannot locate native library '$libname'"
 		$libname;
 	    }
 	}
+    }
+}
+
+class Compile {
+    has @.files;
+    has $.name;
+    has $.lib;
+    has $.outdir;
+
+    my $cfg = $*VM.config;
+    submethod BUILD(:$!name!, :$!outdir, :@!files) {
+        @!files.push: $!name unless @!files;
+        $!lib = $*VM.platform-library-name($!name.IO);
+        $_ .= subst(/\.c$/,'') for @!files;
+    }
+
+    method compile-file($file is copy) {
+        my $CC = "$cfg<cc> -c $cfg<ccshared> $cfg<cflags>";
+        my $c-line = join(' ', $CC, "$cfg<ccout>$file$cfg<obj>", "$file.c");
+        shell($c-line);
+    }
+
+    method compile-all {
+        self.compile-file($_) for @!files;
+        my $LD = "$cfg<ld> $cfg<ldshared> $cfg<ldflags> $cfg<ldlibs>";
+        my $l-line = join(' ', $LD, "$cfg<ldout>$!lib", @!files.map(* ~ $cfg<obj>));
+        shell($l-line);
     }
 }
 
@@ -120,3 +152,4 @@ class Searcher {
 CHECK for NativeCall::EXPORT::.keys {
     UNIT::EXPORT::{$_} := NativeCall::EXPORT::{$_};
 }
+# vim: ft=perl6:st=4:sw=4:et
