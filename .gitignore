@@ -1,0 +1,5 @@
+*.swp
+.precomp
+lib/.precomp
+foo.o
+libfoo.so

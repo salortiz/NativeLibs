@@ -16,10 +16,7 @@
     "licence" : "Artistic-2.0",
     "support" : {
 	"email" : "sog@msg.mx",
-	"source" : [
-	    "git://github.com/salortiz/NativeLibs.git",
-	    "https://github.com/salortiz/NativeLibs.git"
-	]
+	"source" : "https://github.com/salortiz/NativeLibs.git"
     },
     "tags" : [
 	"NativeCall", "MoarVM", "Utilities"
