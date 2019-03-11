@@ -1,8 +1,14 @@
 use v6;
 
-use NativeCall :ALL;
-sub EXPORT { %('NativeCall' => NativeCall) }
-unit module NativeLibs:auth<salortiz>:ver<0.0.6>;
+use NativeCall;
+sub EXPORT(|) {
+    my $exp = &trait_mod:<is>.candidates.first: { .signature ~~ :(Routine, :$native!) };
+    Map.new(
+        'NativeCall' => NativeCall,
+        '&trait_mod:<is>' => $exp.dispatcher
+    )
+}
+unit module NativeLibs:auth<salortiz>:ver<0.0.7>;
 
 our constant is-win = Rakudo::Internals.IS-WIN();
 
