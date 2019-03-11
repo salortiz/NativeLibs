@@ -1,6 +1,6 @@
 use v6;
 use Test;
-use NativeLibs;
+use NativeLibs:ver<0.0.7>;
 
 plan 11;
 

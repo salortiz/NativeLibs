@@ -1,6 +1,6 @@
 use v6;
 use Test;
-use NativeLibs;
+use NativeLibs:ver<0.0.7>;
 
 plan 1;
 
@@ -9,5 +9,5 @@ my \is-win = NativeLibs::is-win;
 
 ok (my $lc = Compile.new(:name<foo>)),  'Can create compiler';
 
-$lc.compile-all;
+$lc.compile-all unless $*VM.config<osname> ~~ 'darwin'; # Not ready for
 # vim: et

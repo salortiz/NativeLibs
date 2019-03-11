@@ -3,8 +3,8 @@ use Test;
 
 plan 23;
 
-use-ok 'NativeLibs' or do { diag "Can't continue"; exit 1 };
-use NativeLibs;
+use-ok 'NativeLibs:v<0.0.7>' or do { diag "Can't continue"; exit 1 };
+use NativeLibs:ver<0.0.7>;
 
 # Our own classes
 ok ::('NativeLibs::Loader') !~~ Failure, 'Class Loader exists';
@@ -21,7 +21,7 @@ for '&trait_mod:<is>',
      bool CArray ulong void &nativesizeof long size_t OpaquePointer &refresh
      longlong &guess_library_name &nativecast>
 {
-         ok NCexports::{$_}:exists, "'$_' loaded too";
+     ok NCexports::{$_}:exists, "'$_' loaded too";
 }
 
 # vim: et
