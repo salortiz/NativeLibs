@@ -1,7 +1,7 @@
 {
     "perl" : "6.c",
     "name" : "NativeLibs",
-    "version" : "0.0.5",
+    "version" : "0.0.7",
     "auth" : "github:salortiz",
     "description" : "Native libraries utilities",
     "depends" : [ ],
