@@ -2,8 +2,6 @@ use v6;
 use Test;
 use NativeLibs:ver<0.0.7>;
 
-plan 11;
-
 # A simple shortcut
 my \Util = ::NativeLibs::Searcher;
 
@@ -50,5 +48,7 @@ lives-ok { $lib = $sub() },             'Closure can be called';
 
 todo "Can fail if the mysqlclient library isn't installed", 1;
 like $lib,  / 'mysql' .* \d+ /,         "Indeed $lib";
+
+done-testing;
 
 # vim: et
