@@ -41,7 +41,7 @@ given $*VM.config<osname>.lc {
 my $dbclient = 'mysql';
 $dbclient ~= 'client' unless NativeLibs::is-win;
 # Test delayed search
-my $sub = Util.at-runtime($dbclient, 'mysql_init', 16 .. 20);
+my $sub = Util.at-runtime($dbclient, 'mysql_init', 16 .. 22);
 
 does-ok $sub, Callable;
 lives-ok { $lib = $sub() },             'Closure can be called';
