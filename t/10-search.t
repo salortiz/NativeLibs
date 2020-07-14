@@ -18,12 +18,13 @@ given $*VM.config<osname>.lc {
         is $dll.symbol('sin', :(num64 --> num64))(pi / 2), 1e0, 'used';
         is $dll.symbol('cos', :(num64 --> num64))(pi),    -1e0, 'twice';
         ok $dll.dispose,                                        'and disposed';
+	unless "/etc/os-release".IO.lines[0] eq 'NAME="Alpine Linux"' {
+            nok Util.try-versions('m', 'sin', 8, 9, 10), 'No version found';
 
-        nok Util.try-versions('m', 'sin', 8, 9, 10), 'No version found';
-
-        dies-ok {
-            NativeLibs::Loader.load('libm.so.9');
-        }, "Can't be loaded";
+            dies-ok {
+		NativeLibs::Loader.load('libm.so.9');
+            }, "Can't be loaded";
+	}
     }
     when 'darwin' {
     }
