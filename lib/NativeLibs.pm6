@@ -8,7 +8,7 @@ sub EXPORT(|) {
         '&trait_mod:<is>' => $exp.dispatcher
     )
 }
-unit module NativeLibs:auth<salortiz>:ver<0.0.7>;
+unit module NativeLibs:auth<salortiz>:ver<0.0.8>;
 
 our constant is-win = Rakudo::Internals.IS-WIN();
 
