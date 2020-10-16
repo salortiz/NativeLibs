@@ -2,7 +2,7 @@ use v6;
 use Test;
 
 plan 10;
-use NativeLibs:ver<0.0.7>;
+use NativeLibs:ver<0.0.8>;
 my &cn = &NativeLibs::cannon-name;
 
 given $*VM.config<osname> {
