@@ -12,7 +12,7 @@
     },
     "repo-type" : "git",
     "source-url": "git://github.com/salortiz/NativeLibs.git",
-    "authors" : "Salvador Ortiz <sortiz@cpan.com>",
+    "authors" : [ "Salvador Ortiz <sortiz@cpan.com>" ],
     "licence" : "Artistic-2.0",
     "support" : {
 	"email" : "sog@msg.mx",
