@@ -34,7 +34,7 @@ given $*VM.config<osname>.lc {
         pass                                        'Unversionized';
 
         ok my $dll = NativeLibs::Loader.load($lib),                     'Can be loaded';
-        ok $dll.symbol('GetCurrentProccessId', :(--> uint32))(), $*PID, 'used',
+        is $dll.symbol('GetCurrentProcessId', :(--> uint32))(), $*PID,  'used';
         ok $dll.dispose,                                                'and disposed';
 
     }
@@ -48,7 +48,7 @@ does-ok $sub, Callable;
 lives-ok { $lib = $sub() },             'Closure can be called';
 
 todo "Can fail if the mysqlclient library isn't installed", 1;
-like $lib,  / 'mysql' .* \d+ /,         "Indeed $lib";
+like $lib, NativeLibs::is-win ?? / 'mysql' / !! / 'mysql' .* \d+ /,    "Indeed $lib";
 
 done-testing;
 
