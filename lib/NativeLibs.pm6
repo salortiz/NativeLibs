@@ -33,19 +33,20 @@ class Loader {
 
     my  %Libraries;
     my  \dyncall = $*VM.config<nativecall_backend> eq 'dyncall';
+    constant k32 = 'kernel32'; # Main windows dll
 
     has Str   $.name;
     has DLLib $.library;
 
     sub dlerror(--> Str)         is native { * } # For linux or darwin/OS X
-    sub GetLastError(--> uint32) is native('kernel32') { * } # On Microsoft land
+    sub GetLastError(--> uint32) is native(k32) { * } # On Microsoft land
     method !dlerror() {
-        is-win ?? ( dlerror() // '' ) !! "error({ GetLastError })";
+        is-win ?? "error({ GetLastError })" !! (dlerror() // '');
     }
 
     sub dlLoadLibrary(Str --> DLLib)  is native { * } # dyncall
     sub dlopen(Str, uint32 --> DLLib) is native { * } # libffi
-    sub LoadLibraryA(Str --> DLLib) is native('kernel32') { * }
+    sub LoadLibraryA(Str --> DLLib) is native(k32) { * }
     method !dlLoadLibrary(Str $libname --> DLLib) {
 	is-win  ?? LoadLibraryA($libname) !!
         dyncall ?? dlLoadLibrary($libname) !!
@@ -63,32 +64,34 @@ class Loader {
 
     sub dlFindSymbol(  DLLib, Str --> Pointer) is native { * } # dyncall
     sub dlsym(         DLLib, Str --> Pointer) is native { * } # libffi
-    sub GetProcAddress(DLLib, Str --> Pointer) is native('kernel32') { * }
-    sub GetModuleHandleA(     Str -->   DLLib) is native('kernel32') { * }
+    sub GetProcAddress(DLLib, Str --> Pointer) is native(k32) { * }
+    sub GetModuleHandleA(     Str -->   DLLib) is native(k32) { * }
     method symbol(::?CLASS $self: Str $symbol, Mu $want = Pointer) {
 	my \c = \(
             $self.DEFINITE ?? $!library !!
             is-win ?? GetModuleHandleA(Str) !! DLLib,
             $symbol
         );
-	my \ptr = (
+	with (
             is-win ?? &GetProcAddress !! dyncall ?? &dlFindSymbol !! &dlsym
-        )(|c);
-
-	if ptr && $want !=== Pointer {
-	    nativecast($want, ptr);
-	} else {
-	    ptr
-	}
+        )(|c) {
+            if $want !=== Pointer {
+                nativecast($want, $_);
+            } else {
+                $_
+            }
+        } else {
+            fail "Symbol '$symbol' not found";
+        }
     }
 
     sub dlFreeLibrary(DLLib) is native { * }
     sub dlclose(      DLLib) is native { * }
-    sub FreeLibrary(  DLLib --> int32) is native('kernel32') { * }
+    sub FreeLibrary(  DLLib --> int32) is native(k32) { * }
     method dispose(--> True) {
 	with $!library {
             is-win  ?? FreeLibrary($_) !!
-	    dyncall ?? dlFreeLibrary($_) !!  dlclose($_);
+	    dyncall ?? dlFreeLibrary($_) !! dlclose($_);
 	    $_ = Nil;
 	}
     }
@@ -148,7 +151,8 @@ class Compile {
 
     method compile-all {
         self.compile-file($_) for @!files;
-        my $LD = "$cfg<ld> $cfg<ldshared> $cfg<ldflags> $cfg<ldlibs>";
+        my $lds = is-win ?? '' !! $cfg<ldshared>;
+        my $LD = "$cfg<ld> $lds $cfg<ldflags> $cfg<ldlibs>";
         my $l-line = join(' ', $LD, "$cfg<ldout>$!lib", @!files.map(* ~ $cfg<obj>));
         shell($l-line);
     }
