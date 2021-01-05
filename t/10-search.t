@@ -1,6 +1,6 @@
 use v6;
 use Test;
-use NativeLibs:ver<0.0.8>;
+use NativeLibs:ver<0.0.9>;
 
 # A simple shortcut
 my \Util = ::NativeLibs::Searcher;
