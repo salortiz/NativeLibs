@@ -3,8 +3,8 @@ use Test;
 
 plan 23;
 
-use-ok 'NativeLibs:v<0.0.8>' or do { diag "Can't continue"; exit 1 };
-use NativeLibs:ver<0.0.8>;
+use-ok 'NativeLibs:v<0.0.9>' or do { diag "Can't continue"; exit 1 };
+use NativeLibs:ver<0.0.9>;
 
 # Our own classes
 ok ::('NativeLibs::Loader') !~~ Failure, 'Class Loader exists';
