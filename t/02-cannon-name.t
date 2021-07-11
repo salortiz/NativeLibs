@@ -6,7 +6,7 @@ use NativeLibs:ver<0.0.9>;
 my &cn = &NativeLibs::cannon-name;
 
 given $*VM.config<osname>.lc {
-    when 'linux'|'freebsd' {
+    when 'linux'|'freebsd'|'openbsd' {
         is cn('foo'),          'libfoo.so',    'libfoo.so';
         is cn('libfoo.so'),    'libfoo.so',    'the same';
 
